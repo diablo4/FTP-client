@@ -1,0 +1,105 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="{% static 'web/assets/js/jquery.ui.widget.js' %}"></script>
+    <script src="{% static 'web/assets/js/jquery.iframe-transport.js' %}"></script>
+    <script src="{% static 'web/assets/js/jquery.fileupload.js' %}"></script>
+</head>
+<body id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverhandler(event);">
+
+    <h1 id="current-path">{{ path1 }}</h1>
+    {% for d in data %}
+        <div class="file-list">{{ d | linebreaks}}</div>
+    {% endfor %}
+
+</body>
+<script>
+
+    $(function () {
+      /* 1. OPEN THE FILE EXPLORER WINDOW */
+      $(".js-upload-photos").click(function () {
+        $("#fileupload").click();
+      });
+
+      /* 2. INITIALIZE THE FILE UPLOAD COMPONENT */
+      $("#fileupload").fileupload({
+        done: function (e, data) {  /* 3. PROCESS THE RESPONSE FROM THE SERVER */
+            console.log('faile!!!!!!!!111')
+        }
+      });
+    });
+
+
+    function dropHandler (ev) {
+        console.log('file(s) dropped!');
+
+        ev.preventDefault();
+
+        if(ev.dataTransfer.items) {
+            for (let i = 0; i < ev.dataTransfer.items.length; i++) {
+                // If dropped items aren't files, reject them
+                if (ev.dataTransfer.items[i].kind === 'file') {
+                    let file = ev.dataTransfer.items[i].getAsFile();
+                    console.log('... file[' + i + '].name = ' + file.name);
+
+
+                    let form = document.createElement('formdatastart')
+                    let formData = new FormData();
+                    let getPath = document.getElementById('current-path').innerText;
+                    formData.append('getCurrentPath', getPath);
+                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                    formData.append('file', file);
+
+                    console.log(getPath)
+
+                    {#document.body.appendChild(formData);#}
+
+
+                    // form
+                    {#let form = document.createElement('form');#}
+                    {#form.setAttribute("method", "POST");#}
+                    {#form.setAttribute('action', '{% url 'upload' %}');#}
+                    {##}
+                    {#let fileField = document.createElement('input');#}
+                    {#fileField.setAttribute("type", "file");#}
+                    {#fileField.setAttribute("name", "my-file");#}
+                    {#fileField.setAttribute("id", "my-file");#}
+                    {#fileField.setAttribute("value", file);#}
+
+                    {#form.appendChild(fileField);#}
+                    {#document.body.appendChild(form);#}
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '{% url 'upload' %}',
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        success: function(response) {
+                            console.log(response)
+                        },
+                        error: function(response) {
+                            console.log(response)
+                        }
+                    });
+                }
+            }
+        } else {
+            for (let i = 0; i < ev.dataTransfer.files.length; i++) {
+                console.log('...files[' + i + '].name' +  ev.dataTransfer.files[i].name)
+            }
+        }
+    }
+
+    function dragOverhandler(ev) {
+        console.log('files in drop zone')
+        ev.preventDefault();
+    }
+</script>
+
+<script type="text/javascript" src="{% static '/web/assets/js/file-list.js' %}"></script>
+</html>
